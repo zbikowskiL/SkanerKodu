@@ -1,0 +1,172 @@
+<Window x:Class="SolutionScanner.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:SolutionScanner.UI.Views"
+        Title="SolutionScanner.NET – analiza solucji .NET" Height="900" Width="1500"
+        WindowStartupLocation="CenterScreen" Background="White" FontFamily="Segoe UI" FontSize="12.5">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="#111827" Padding="14,10">
+            <DockPanel>
+                <TextBlock Text="SolutionScanner.NET" Foreground="White" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding MsBuildInfo}" Foreground="#9CA3AF" Margin="20,0,0,0" VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" HorizontalAlignment="Right"/>
+            </DockPanel>
+        </Border>
+
+        <Border DockPanel.Dock="Bottom" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="10,6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <ProgressBar Height="16" Value="{Binding ProgressValue}" IsIndeterminate="{Binding IsIndeterminate}" Maximum="100"/>
+                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                    <TextBlock TextTrimming="CharacterEllipsis">
+                        <Run Text="{Binding StageText, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text=" | "/>
+                        <Run Text="{Binding StatusText, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis">
+                        <Run Text="Projekt: "/><Run Text="{Binding CurrentProject, Mode=OneWay}"/>
+                        <Run Text="   Plik: "/><Run Text="{Binding CurrentFile, Mode=OneWay}"/>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="360" MinWidth="280"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Background="{StaticResource PanelBrush}" Padding="12">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock Text="1. Solucja (.sln)" Style="{StaticResource SectionHeader}" Margin="0,0,0,4"/>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Wybierz…" Command="{Binding BrowseSolutionCommand}" Margin="6,0,0,0"/>
+                            <TextBox Text="{Binding SolutionPath, Mode=OneWay}" IsReadOnly="True" VerticalContentAlignment="Center"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,10,0,4">
+                            <TextBlock Text="2. Projekty" Style="{StaticResource SectionHeader}" Margin="0" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Content="Wszystkie" Command="{Binding SelectAllProjectsCommand}" Padding="8,2"/>
+                                <Button Content="Żaden" Command="{Binding SelectNoProjectsCommand}" Padding="8,2" Margin="0"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Bottom">
+                        <TextBlock Text="3. Wyszukiwane frazy (oddzielone ;)" Style="{StaticResource SectionHeader}"/>
+                        <TextBox Text="{Binding PhrasesText, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"/>
+                        <Button Content="Wczytaj frazy z pliku TXT…" Command="{Binding LoadPhrasesFromFileCommand}" HorizontalAlignment="Left" Margin="0,6,0,0"/>
+
+                        <Expander Header="4. Ustawienia analizy" IsExpanded="True" Margin="0,10,0,0">
+                            <StackPanel Margin="4,4,0,0">
+                                <CheckBox Content="Uwzględniaj wielkość liter" IsChecked="{Binding CaseSensitive}"/>
+                                <CheckBox Content="Ignoruj polskie znaki (kapital = Kapitał)" IsChecked="{Binding IgnoreDiacritics}"/>
+                                <CheckBox Content="Wyszukuj odwołania do symboli (SymbolFinder)" IsChecked="{Binding FindReferences}"/>
+                                <CheckBox Content="Analizuj przepływ danych" IsChecked="{Binding AnalyzeDataFlow}" IsEnabled="{Binding FindReferences}"/>
+                                <CheckBox Content="Przeszukuj XML/JSON/config/Razor" IsChecked="{Binding AnalyzeOtherFiles}"/>
+                                <CheckBox Content="Uwzględnij pliki generowane (.g.cs, .designer.cs)" IsChecked="{Binding IncludeGeneratedFiles}"/>
+                                <CheckBox Content="Analiza typów/precyzji/konwersji w całym kodzie" IsChecked="{Binding AnalyzeEntireCode}"
+                                          ToolTip="Domyślnie analizowane są tylko wyrażenia powiązane z frazami."/>
+                                <CheckBox Content="Uruchom dotnet restore przed analizą" IsChecked="{Binding RestorePackages}"/>
+                            </StackPanel>
+                        </Expander>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <Button Content="▶  Rozpocznij analizę" Style="{StaticResource PrimaryButton}" Command="{Binding StartCommand}" Padding="16,7"/>
+                            <Button Content="Anuluj" Command="{Binding CancelCommand}" Padding="14,7"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <ListBox ItemsSource="{Binding Projects}" BorderBrush="{StaticResource BorderBrush}" MinHeight="80">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsSelected}">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Description}" Foreground="{StaticResource MutedBrush}" FontSize="11"/>
+                                    </StackPanel>
+                                </CheckBox>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="{StaticResource BorderBrush}"/>
+
+            <DockPanel Grid.Column="2" Margin="10">
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <TextBlock Text="Filtr wyników:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged, Delay=300}" VerticalContentAlignment="Center" Height="26"
+                             ToolTip="Filtruje wszystkie tabele (dowolna kolumna, bez rozróżniania wielkości liter)"/>
+                </DockPanel>
+                <TabControl>
+                    <TabItem Header="Wyszukiwanie">
+                        <views:ResultGrid DataContext="{Binding SearchTable}"/>
+                    </TabItem>
+                    <TabItem Header="Zmienne i typy danych">
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="5"/><RowDefinition/></Grid.RowDefinitions>
+                            <views:ResultGrid DataContext="{Binding DeclarationsTable}"/>
+                            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"/>
+                            <views:ResultGrid Grid.Row="2" DataContext="{Binding TypesTable}"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Precyzja i zaokrąglenia">
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="5"/><RowDefinition/></Grid.RowDefinitions>
+                            <views:ResultGrid DataContext="{Binding PrecisionTable}"/>
+                            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"/>
+                            <views:ResultGrid Grid.Row="2" DataContext="{Binding RoundingTable}"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Konwersje i obliczenia">
+                        <views:ResultGrid DataContext="{Binding ConversionTable}"/>
+                    </TabItem>
+                    <TabItem Header="Zależności i odwołania">
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition Height="2*"/><RowDefinition Height="5"/><RowDefinition Height="3*"/></Grid.RowDefinitions>
+                            <views:ResultGrid DataContext="{Binding DependencyTable}"/>
+                            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"/>
+                            <views:ResultGrid Grid.Row="2" DataContext="{Binding ReferenceTable}"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Przepływ danych">
+                        <views:ResultGrid DataContext="{Binding DataFlowTable}"/>
+                    </TabItem>
+                    <TabItem Header="Potencjalne problemy">
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition Height="3*"/><RowDefinition Height="5"/><RowDefinition Height="2*"/></Grid.RowDefinitions>
+                            <views:ResultGrid DataContext="{Binding ProblemTable}"/>
+                            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"/>
+                            <views:ResultGrid Grid.Row="2" DataContext="{Binding LimitationTable}"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Eksport i podsumowanie">
+                        <Grid Margin="4">
+                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="10"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Button Content="Eksportuj wszystkie raporty do CSV…" Style="{StaticResource PrimaryButton}" Command="{Binding ExportCommand}"/>
+                                </StackPanel>
+                                <TextBlock DockPanel.Dock="Top" Text="Podsumowanie analizy" Style="{StaticResource SectionHeader}" Margin="0,0,0,4"/>
+                                <DataGrid ItemsSource="{Binding Summary}"/>
+                            </DockPanel>
+                            <DockPanel Grid.Column="2">
+                                <TextBlock DockPanel.Dock="Top" Text="Dziennik analizy" Style="{StaticResource SectionHeader}" Margin="0,0,0,4"/>
+                                <ListBox ItemsSource="{Binding LogLines}" FontFamily="Consolas" FontSize="11" VirtualizingPanel.IsVirtualizing="True"/>
+                            </DockPanel>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

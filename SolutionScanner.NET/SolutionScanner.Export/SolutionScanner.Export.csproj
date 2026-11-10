@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>SolutionScanner.Export</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="33.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SolutionScanner.Core\SolutionScanner.Core.csproj" />
+  </ItemGroup>
+</Project>

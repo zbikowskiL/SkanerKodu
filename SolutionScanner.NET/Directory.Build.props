@@ -1,0 +1,28 @@
+﻿<Project>
+  <!-- Wspólne ustawienia dla wszystkich projektów SolutionScanner.NET (nie dotyczy katalogu samples). -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <Company>SolutionScanner.NET</Company>
+    <Product>SolutionScanner.NET</Product>
+    <Version>1.0.0</Version>
+    <NeutralLanguage>pl-PL</NeutralLanguage>
+    <SatelliteResourceLanguages>en;pl</SatelliteResourceLanguages>
+    <RoslynVersion>4.14.0</RoslynVersion>
+    <MSBuildPackageVersion>17.11.48</MSBuildPackageVersion>
+  </PropertyGroup>
+  <!--
+    Microsoft.CodeAnalysis.Workspaces.MSBuild zależy od pakietów MSBuild. Biblioteki MSBuild NIE mogą być kopiowane
+    do katalogu wyjściowego – w czasie działania są ładowane z zainstalowanego .NET SDK / Visual Studio
+    przez Microsoft.Build.Locator (wymóg poprawnego działania MSBuildWorkspace). Dlatego ExcludeAssets="runtime".
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build" Version="$(MSBuildPackageVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MSBuildPackageVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MSBuildPackageVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MSBuildPackageVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.StringTools" Version="$(MSBuildPackageVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+</Project>
